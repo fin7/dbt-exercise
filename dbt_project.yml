@@ -33,4 +33,12 @@ clean-targets:         # directories to be removed by `dbt clean`
 # using the `{{ config(...) }}` macro.
 models:
   mtla_dbt_exercise:
-
+    staging:
+      +materialized: view
+    marts:
+      intermediate:
+        +materialized: ephemeral
+      dim:
+        +materialized: table
+      fct:
+        +materialized: table
