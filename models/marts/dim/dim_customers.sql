@@ -37,17 +37,18 @@ joined as (
 
   select
 
-    c.customer_unique_id,
-    count(distinct soi.order_id) as order_count,
-    round(sum(soi.price) + sum(soi.freight_value), 2) as total_order_value,
-    min(soi.order_purchase_timestamp) as first_order_date,
-    max(soi.order_purchase_timestamp) as last_order_date,
-    max(os.order_value) as highest_order_value
+    customers.customer_unique_id,
+    count(distinct sales_order_items.order_id) as order_count,
+    (round(sum(sales_order_items.price) + sum(sales_order_items.freight_value),
+     2)) as total_order_value,
+    min(sales_order_items.order_purchase_timestamp) as first_order_date,
+    max(sales_order_items.order_purchase_timestamp) as last_order_date,
+    max(order_stats.order_value) as highest_order_value
 
 
-  from sales_order_items soi
-  left join order_stats os using(order_id)
-  left join customers c using(customer_id)
+  from sales_order_items
+  left join order_stats using(order_id)
+  left join customers using(customer_id)
 
   group by 1
 
