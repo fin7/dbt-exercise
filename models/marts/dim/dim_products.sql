@@ -24,17 +24,18 @@ joined as (
 
   select
 
-    p.product_id,
+    products.product_id,
     count(*) as total_units_sold,
-    round(sum(soi.price) + sum(soi.freight_value), 2) as total_revenue,
+    round(sum(sales_order_items.price) + sum(sales_order_items.freight_value), 2) as total_revenue,
     case
       when row_number() over (order by count(*) desc)<=10 then TRUE
       else FALSE
     end as is_top10_product,
-    max(p.product_length_cm) * max(p.product_height_cm) * max(p.product_width_cm) as product_volume_cubic_cm
+    (max(products.product_length_cm) * max(products.product_height_cm)
+    * max(products.product_width_cm)) as product_volume_cubic_cm
 
-  from products p
-  left join sales_order_items soi using(product_id)
+  from products
+  left join sales_order_items using(product_id)
 
   group by 1
 

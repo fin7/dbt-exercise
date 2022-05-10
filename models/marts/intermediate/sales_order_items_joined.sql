@@ -22,14 +22,16 @@ joined as (
 
   select
 
-    oi.order_item_id,
-    oi.product_id,
-    oi.price,
-    oi.freight_value,
-    s.*
+    order_items.order_item_id,
+    order_items.product_id,
+    order_items.price,
+    order_items.freight_value,
+    sales.*
 
-  from sales s
-  left join order_items oi using(order_id)
+  from sales
+  left join order_items using(order_id)
+
+  where order_items.order_item_id is not null
 
 )
 
