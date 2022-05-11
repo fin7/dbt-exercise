@@ -3,10 +3,9 @@
 {{
   config(
     target_schema='dbt_sandbox1',
-    unique_key='product_id',
-    strategy='timestamp',
-    updated_at='order_date',
-    invalidate_hard_deletes=True
+    unique_key='product_date_id',
+    strategy='check',
+    check_cols=['units_sold']
   )
 }}
 

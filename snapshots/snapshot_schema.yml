@@ -1,0 +1,31 @@
+version: 2
+
+snapshots:
+
+  - name: daily_products_sold
+    description: Snapshot table showing changes in daily units sold by product.
+    columns:
+      - name: product_date_id
+        description: Surrogate key that uniquely identifies each record.
+
+      - name: order_date
+        description: All dates between first and last purchase date for all products.
+        tests:
+
+      - name: product_id
+        description: Identifier associated with each product.
+
+      - name: units_sold
+        description: Daily number of units sold by product
+
+      - name: dbt_scd_id
+        description: Unique identifier for SCD.
+
+      - name: dbt_updated_at
+        description: Timestamp tracking when a record is updated.
+
+      - name: dbt_valid_from
+        description: Timestamp from which a record is valid.
+
+      - name: dbt_valid_to
+        description: Timestamp until which a record is valid.

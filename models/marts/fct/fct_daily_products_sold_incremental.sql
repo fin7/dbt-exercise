@@ -29,9 +29,11 @@ sales_order_items as (
 
 all_dates as (
 
-    select
-        date(date_spine.order_date) as order_date,
-        products.product_id
+  select
+    {{ dbt_utils.surrogate_key(['product_id', 'order_date']) }}
+    as product_date_id,
+    date(date_spine.order_date) as order_date,
+    products.product_id
 
     from date_spine
 
@@ -42,6 +44,7 @@ all_dates as (
 daily_products_sold as (
 
   select
+    all_dates.product_date_id,
     all_dates.order_date,
     all_dates.product_id,
     coalesce(sum(sales_order_items.units_sold), 0) as units_sold
@@ -51,7 +54,8 @@ daily_products_sold as (
     on all_dates.order_date=sales_order_items.order_date
     and all_dates.product_id=sales_order_items.product_id
 
-  group by 1,2
+  group by 1,2,3
+
 )
 
 select * from daily_products_sold order by order_date, product_id

@@ -60,7 +60,6 @@ models:
       - name: freight_value
         description: Freight value. Assumed to be added to sale price for revenue.
 
-
   - name: stg_orders
     description: View containing orders.
     columns:
@@ -130,6 +129,48 @@ models:
       - name: product_width_cm
         description: Product width in cm.
 
+  - name: sales_order_items_joined
+    description: Intermediate view that filters for sales, and joins orders and items.
+    columns:
+      - name: unique_order_item_id
+        description: Surrogate key that identifies each order item instance.
+        tests:
+          - unique
+          - not_null
+
+      - name: order_item_id
+        description: Identifier associated with each item in an order.
+        tests:
+          - not_null
+
+      - name: order_id
+        description: Idenfifier associated with each order.
+        tests:
+          - not_null
+
+      - name: product_id
+        description: Identifier associated with each product.
+
+      - name: customer_id
+        description: Identifier for each time a customer places an order.
+
+      - name: order_status
+        description: Values associated with different phases of an order.
+
+      - name: order_purchase_timestamp
+        description: Timestamp associated with each order being placed.
+
+      - name: order_delivered_customer_date
+        description: Timestamp associated with each order being delivered.
+
+      - name: price
+        description: Sale price.
+
+      - name: freight_value
+        description: Freight value. Assumed to be added to sale price for revenue.
+
+
+
   - name: dim_customers
     description: Dimension table containing each unique customer.
     columns:
@@ -160,6 +201,27 @@ models:
       - name: highest_order_value
         description: Customer's most expensive order value.
 
+  - name: dim_customer_address
+    description: Dimension table containing address for each customer instance.
+    columns:
+      - name: customer_id
+        description: Primary key that identifies each customer instance.
+        tests:
+          - unique
+          - not_null
+
+      - name: customer_unique_id
+        description: Identifier for each unique customer.
+
+      - name: customer_zip_code_prefix
+        description: Zip code prefix associated with each customer instance.
+
+      - name: customer_city
+        description: City associated with each customer instance.
+
+      - name: customer_state
+        description: State associated with each customer instance.
+
   - name: dim_products
     description: Dimension table containing each unique product.
     columns:
@@ -183,8 +245,44 @@ models:
       - name: product_volume_cubic_cm
         description: Product volume in cubic cm.
 
+  - name: dim_product_attributes
+    description: Dimension table containing attributes associated with each product.
+    columns:
+      - name: product_id
+        description: Primary key that identifies each product.
+        tests:
+          - unique
+          - not_null
+          - relationships:
+              to: ref('dim_products')
+              field: product_id
+
+      - name: product_category_name
+        description: Category associated with each product.
+
+      - name: product_name_length
+        description: Number of characters in the product name.
+
+      - name: product_description_length
+        description: Number of characters in the product description.
+
+      - name: product_photos_qty
+        description: Number of photos for each product.
+
+      - name: product_weight_g
+        description: Product weight in grams.
+
+      - name: product_length_cm
+        description: Product length in cm.
+
+      - name: product_height_cm
+        description: Product height in cm.
+
+      - name: product_width_cm
+        description: Product width in cm.
+
   - name: fct_sales
-    description: Fact table containing each sale order item (deliver or shipped).
+    description: '{{ doc("fct_sales__description") }}'
     columns:
       - name: unique_order_item_id
         description: Primary key that uniquely identifies each order item.
@@ -252,6 +350,11 @@ models:
   - name: fct_daily_products_sold_incremental
     description: Fact table showing units sold each day by product (including 0).
     columns:
+      - name: product_date_id
+        description: Surrogate key that uniquely identifies each record.
+        tests:
+          - unique
+          - not_null
       - name: order_date
         description: All dates between first and last purchase date for all products.
         tests:
