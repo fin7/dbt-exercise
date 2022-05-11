@@ -28,7 +28,7 @@ sales_customers_joined as (
     case
       when row_number() over
       (partition by c.customer_unique_id
-        order by soi.order_purchase_timestamp)=1 then 'New'
+        order by soi.order_purchase_timestamp asc)=1 then 'New'
       else 'Repeat'
     end as customer_type,
     date_diff(soi.order_delivered_customer_date, soi.order_purchase_timestamp, DAY)

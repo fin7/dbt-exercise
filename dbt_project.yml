@@ -18,6 +18,7 @@ test-paths: ["tests"]
 seed-paths: ["seeds"]
 macro-paths: ["macros"]
 snapshot-paths: ["snapshots"]
+asset-paths: ["asset"]
 
 target-path: "target"  # directory which will store compiled SQL files
 clean-targets:         # directories to be removed by `dbt clean`
@@ -37,7 +38,7 @@ models:
       +materialized: view
     marts:
       intermediate:
-        +materialized: view
+        +materialized: ephemeral
       dim:
         +materialized: table
       fct:
