@@ -1,10 +1,20 @@
+{{
+  config(
+    materialized = 'view'
+    )
+}}
+
 with sales as (
 
   select
 
     *
 
-  from {{ ref('sales_filtered') }}
+  from {{ ref('stg_orders') }}
+
+  where
+    order_status='delivered' or
+    order_status='shipped'
 
 ),
 
@@ -22,6 +32,7 @@ joined as (
 
   select
 
+    order_items.unique_order_item_id,
     order_items.order_item_id,
     order_items.product_id,
     order_items.price,

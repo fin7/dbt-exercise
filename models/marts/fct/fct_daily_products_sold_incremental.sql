@@ -30,7 +30,7 @@ sales_order_items as (
 all_dates as (
 
     select
-        date_spine.order_date,
+        date(date_spine.order_date) as order_date,
         products.product_id
 
     from date_spine

@@ -1,0 +1,268 @@
+version: 2
+
+models:
+
+  - name: stg_customers
+    description: View containing customer identifiers and address.
+    columns:
+      - name: customer_id
+        description: Primary key that identifies each customer instance.
+        tests:
+          - unique
+          - not_null
+
+      - name: customer_unique_id
+        description: Unique identifier for each customer.
+        tests:
+          - not_null
+
+      - name: customer_zip_code_prefix
+        description: Zip code prefix associated with each customer instance.
+
+      - name: customer_city
+        description: City associated with each customer instance.
+
+      - name: customer_state
+        description: State associated with each customer instance.
+
+  - name: stg_order_items
+    description: View containing orders at the item level.
+    columns:
+      - name: unique_order_item_id
+        description: Surrogate key that identifies each order item instance.
+        tests:
+          - unique
+          - not_null
+
+      - name: order_item_id
+        description: Identifier associated with each item in an order.
+        tests:
+          - not_null
+
+      - name: order_id
+        description: Idenfifier associated with each order.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_orders')
+              field: order_id
+
+      - name: product_id
+        description: Identifier associated with each product.
+        tests:
+          - relationships:
+              to: ref('stg_products')
+              field: product_id
+
+      - name: price
+        description: Sale price.
+
+      - name: freight_value
+        description: Freight value. Assumed to be added to sale price for revenue.
+
+
+  - name: stg_orders
+    description: View containing orders.
+    columns:
+      - name: order_id
+        description: Primary key that identifies each order.
+        tests:
+          - unique
+          - not_null
+
+      - name: customer_id
+        description: Identifier for each time a customer places an order.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_customers')
+              field: customer_id
+
+      - name: order_status
+        description: Values associated with different phases of an order.
+        tests:
+          - accepted_values:
+              values: ['created',
+                      'shipped',
+                      'approved',
+                      'canceled',
+                      'invoiced',
+                      'delivered',
+                      'processing',
+                      'unavailable']
+
+      - name: order_purchase_timestamp
+        description: Timestamp associated with each order being placed.
+
+      - name: order_delivered_customer_date
+        description: Timestamp associated with each order being delivered.
+
+  - name: stg_products
+    description: View containing products and attributes.
+    columns:
+      - name: product_id
+        description: Primary key that identifies each product.
+        tests:
+          - unique
+          - not_null
+
+      - name: product_category_name
+        description: Category associated with each product.
+
+      - name: product_name_length
+        description: Number of characters in the product name.
+
+      - name: product_description_length
+        description: Number of characters in the product description.
+
+      - name: product_photos_qty
+        description: Number of photos for each product.
+
+      - name: product_weight_g
+        description: Product weight in grams.
+
+      - name: product_length_cm
+        description: Product length in cm.
+
+      - name: product_height_cm
+        description: Product height in cm.
+
+      - name: product_width_cm
+        description: Product width in cm.
+
+  - name: dim_customers
+    description: Dimension table containing each unique customer.
+    columns:
+      - name: customer_unique_id
+        description: Primary key that identifies each customer.
+        tests:
+          - unique
+          - not_null
+
+      - name: order_count
+        description: Number of orders resulting in sales placed by each customer.
+        tests:
+          - not_null
+
+      - name: total_order_value
+        description: Customer's total spend on orders resulting in sales.
+
+      - name: first_order_date
+        description: Date of first order placed by customer that became a sale.
+        tests:
+          - not_null
+
+      - name: last_order_date
+        description: Date of latest order placed by customer that became a sale.
+        tests:
+          - not_null
+
+      - name: highest_order_value
+        description: Customer's most expensive order value.
+
+  - name: dim_products
+    description: Dimension table containing each unique product.
+    columns:
+      - name: product_id
+        description: Primary key that identifies each product.
+        tests:
+          - unique
+          - not_null
+
+      - name: total_units_sold
+        description: Each product's total units sold from orders resulting in sales.
+
+      - name: total_revenue
+        description: Each product's total revenue from orders resulting in sales.
+
+      - name: is_top10_product
+        description: Identifies whether a product is top 10 in total units sold.
+        tests:
+          - not_null
+
+      - name: product_volume_cubic_cm
+        description: Product volume in cubic cm.
+
+  - name: fct_sales
+    description: Fact table containing each sale order item (deliver or shipped).
+    columns:
+      - name: unique_order_item_id
+        description: Primary key that uniquely identifies each order item.
+        tests:
+          - unique
+          - not_null
+
+      - name: order_item_id
+        description: Identifier associated with each item in an order.
+        tests:
+          - not_null
+
+      - name: order_id
+        description: Idenfifier associated with each order.
+        tests:
+          - not_null
+
+      - name: customer_id
+        description: Idenfifier for each customer instance placing an order.
+        tests:
+          - not_null
+
+      - name: customer_unique_id
+        description: Idenfifier for each customer.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_customers')
+              field: customer_unique_id
+
+      - name: product_id
+        description: Idenfifier for each product.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_products')
+              field: product_id
+
+      - name: order_status
+        description: Values associated with different phases of an order.
+
+      - name: order_purchase_timestamp
+        description: Timestamp associated with each order being placed.
+
+      - name: order_delivered_customer_date
+        description: Timestamp associated with each order being delivered.
+
+      - name: customer_type
+        description: Identifies whether a customer's order is new or repeat business.
+        tests:
+          - accepted_values:
+              values: ['New', 'Repeat']
+
+      - name: price
+        description: Sale price.
+
+      - name: freight_value
+        description: Freight value. Assumed to be added to sale price for revenue.
+
+      - name: days_from_purchase_to_delivery
+        description: Days between the timestamped purchase and customer delivery.
+        tests:
+          - nonnegative_value
+
+  - name: fct_daily_products_sold_incremental
+    description: Fact table showing units sold each day by product (including 0).
+    columns:
+      - name: order_date
+        description: All dates between first and last purchase date for all products.
+        tests:
+          - not_null
+
+      - name: product_id
+        description: Identifier associated with each product.
+        tests:
+          - not_null
+
+      - name: units_sold
+        description: Daily number of units sold by product
+        tests:
+          - not_null
